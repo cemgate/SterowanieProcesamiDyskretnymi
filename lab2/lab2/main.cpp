@@ -53,7 +53,21 @@ int how_long(std::vector<Process> processes)
 	return cmax;
 }
 
-
+void make_permutation(std::vector<int>& move_permutation, int add_to,int blank)
+{
+	if (blank == move_permutation.size() - 1)
+	{
+		move_permutation[blank] = add_to;
+	}
+	else
+	{
+		for (int i = 0; i < move_permutation.size()-1; i++)
+		{
+			std::swap(move_permutation[i], move_permutation[i + 1]);
+		}
+		move_permutation[move_permutation.size()-1] = add_to;
+	}
+}
 
 
 
@@ -68,6 +82,8 @@ witi_algorithm algorithm(std::vector<Process>& processes, int blank, witi_algori
 	int witi = INT_MAX;
     int prev_witi = INT_MAX;
 	std::vector<int> tmp_permutation;
+
+	int tmp_add = 0;
 	
 	if (blank == processes.size())
 	{
@@ -86,35 +102,49 @@ witi_algorithm algorithm(std::vector<Process>& processes, int blank, witi_algori
 			tmp_proces = processes[i];
 			processes[i] = blank_proces;
 			permutation[i] = 0;
-			tmp_permutation = permutation;
-
+			
 			if (how_long(tmp_vector) - tmp_proces.d >= 0)
 			{
 				if (hash.find(permutation) == hash.end())
 				{
 					witi = std::min(algorithm(processes, blank + 1, witi_solution, hash,hash2,permutation).witi + tmp_proces.w * (how_long(tmp_vector) - tmp_proces.d), witi);
+					hash[permutation] = witi;
 					if (witi < prev_witi)
 					{
-						hash2[permutation] = tmp_permutation;
+						if (hash2.find(permutation) == hash2.end())
+						{
+							tmp_permutation = permutation;
+							tmp_add = tmp_proces.place;
+						}
+						else
+						{
+							
+							tmp_permutation = hash2[permutation];
+							tmp_add = tmp_proces.place;
+						}
+						tmp_add = tmp_proces.place;
+						prev_witi = witi;
 					}
-					hash[permutation] = witi;
-					
-
 				}
 				else
 				{
 					witi = std::min(hash[permutation] + tmp_proces.w * (how_long(tmp_vector) - tmp_proces.d) , witi);
 					if (witi < prev_witi)
 					{
-
-
+						if (hash2.find(permutation) == hash2.end())
+						{
+							tmp_permutation = permutation;
+							tmp_add = tmp_proces.place;
+						}
+						else
+						{
+							tmp_permutation = hash2[permutation];
+							tmp_add = tmp_proces.place;
+						}
+						tmp_add = tmp_proces.place;
+						prev_witi = witi;
 					}
-						
-					
 				}
-		
-				
-				
 			}
 
 			else
@@ -123,18 +153,41 @@ witi_algorithm algorithm(std::vector<Process>& processes, int blank, witi_algori
 				{
 					witi = std::min(algorithm(processes, blank + 1, witi_solution, hash,hash2,permutation).witi, witi);
 					hash[permutation] = witi;
-					
-					
+					if (witi < prev_witi)
+					{
+						if (hash2.find(permutation) == hash2.end())
+						{
+							tmp_permutation = permutation;
+							tmp_add = tmp_proces.place;
+						}
+						else
+						{
+							tmp_permutation = hash2[permutation];
+							tmp_add = tmp_proces.place;
+						}
+						tmp_add = tmp_proces.place;
+						prev_witi = witi;
+					}
 				}
 				else
 				{
 					witi = std::min(hash[permutation], witi);
-					
-						
-				
-				}
-
-				
+					if (witi < prev_witi)
+					{
+						if (hash2.find(permutation) == hash2.end())
+						{
+							tmp_permutation = permutation;
+							tmp_add = tmp_proces.place;
+						}
+						else
+						{
+							tmp_permutation = hash2[permutation];
+							tmp_add = tmp_proces.place;
+						}
+						tmp_add = tmp_proces.place;
+						prev_witi = witi;
+					}
+				}	
 			}
 
 			processes[i] = tmp_proces;
@@ -142,7 +195,9 @@ witi_algorithm algorithm(std::vector<Process>& processes, int blank, witi_algori
 		}
 	}
 
-	
+	make_permutation(tmp_permutation, tmp_add,blank);
+	hash2[permutation] = tmp_permutation;
+	witi_solution.permutation = tmp_permutation;
 	witi_solution.witi = witi;
 	return witi_solution;
 
@@ -163,9 +218,6 @@ int main()
 	int zero = 0;
 	processes = load_data(std::to_string(11));
 
-
-
-
 	for (int i = 0; i < processes.size(); i++)
 	{
 		witi_solution.permutation.push_back(zero);
@@ -182,9 +234,12 @@ int main()
 	float czas = duration.count() / 1000000.0;
 
 
-	std::cout << "Calkowity czas wynosi: " << czas << std::endl;
+	std::cout << "Calkowity czas wynosi: " << czas <<" s" << std::endl;
 	std::cout << "Optymalne kara: " << witi_solution.witi << std::endl;
 	std::cout << "Optymalne ustawienie procesow: ";
 	
-
+	for (int i = 0; i < processes.size(); i++)
+	{
+		std::cout << witi_solution.permutation[i] << " ";
+	}
 }
