@@ -53,7 +53,7 @@ int how_long(std::vector<Process> processes)
 	return cmax;
 }
 
-void make_permutation(std::vector<int>& move_permutation, int add_to,int blank)
+std::vector<int> make_permutation(std::vector<int>& move_permutation, int add_to,int blank)
 {
 	if (blank == move_permutation.size() - 1)
 	{
@@ -67,6 +67,7 @@ void make_permutation(std::vector<int>& move_permutation, int add_to,int blank)
 		}
 		move_permutation[move_permutation.size()-1] = add_to;
 	}
+	return move_permutation;
 }
 
 
@@ -79,10 +80,13 @@ witi_algorithm algorithm(std::vector<Process>& processes, int blank, witi_algori
 	Process tmp_proces;
 	Process blank_proces = { 0,0,0,0 };
 	std::vector<Process> tmp_vector = processes;
+
+
 	int witi = INT_MAX;
     int prev_witi = INT_MAX;
-	std::vector<int> tmp_permutation;
 
+
+	std::vector<int> tmp_permutation;
 	int tmp_add = 0;
 	
 	if (blank == processes.size())
@@ -172,7 +176,7 @@ witi_algorithm algorithm(std::vector<Process>& processes, int blank, witi_algori
 				else
 				{
 					witi = std::min(hash[permutation], witi);
-					if (witi < prev_witi)
+				    if (witi < prev_witi)
 					{
 						if (hash2.find(permutation) == hash2.end())
 						{
@@ -195,8 +199,8 @@ witi_algorithm algorithm(std::vector<Process>& processes, int blank, witi_algori
 		}
 	}
 
-	make_permutation(tmp_permutation, tmp_add,blank);
-	hash2[permutation] = tmp_permutation;
+	
+	hash2[permutation] = make_permutation(tmp_permutation, tmp_add, blank);
 	witi_solution.permutation = tmp_permutation;
 	witi_solution.witi = witi;
 	return witi_solution;
@@ -216,7 +220,7 @@ int main()
 	std::map<std::vector<int>, std::vector<int>> hash2;
 
 	int zero = 0;
-	processes = load_data(std::to_string(11));
+	processes = load_data(std::to_string(1));
 
 	for (int i = 0; i < processes.size(); i++)
 	{
